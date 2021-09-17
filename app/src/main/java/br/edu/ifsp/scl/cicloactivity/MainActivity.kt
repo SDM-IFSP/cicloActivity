@@ -19,17 +19,17 @@ import br.edu.ifsp.scl.cicloactivity.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
     private lateinit var activityMainActivity: ActivityMainBinding
-
-    companion object{
-        val CICLO_ACTIVITY  = "CICLO_ACTIVITY"
-        val NOME = "NOME"
-        val SOBRENOME = "SOBRENOME"
-    }
-
     private lateinit var  nomeEt: EditText
     private lateinit var  sobrenomeEt: EditText
     private lateinit var  editarActivityResultLaucher: ActivityResultLauncher<Intent>
     //private lateinit var  sobrenomeEt: EditText
+
+    companion object{
+        val CICLO_ACTIVITY: String = "CICLO_ACTIVITY"
+        val NOME = "NOME"
+        val SOBRENOME = "SOBRENOME"
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
         nomeEt.width = LinearLayout.LayoutParams.MATCH_PARENT
         nomeEt.height = LinearLayout.LayoutParams.WRAP_CONTENT
         nomeEt.inputType = InputType.TYPE_TEXT_VARIATION_PERSON_NAME
-        nomeEt.hint = "NOME"
+        nomeEt.hint = "Nome"
         activityMainActivity.root.addView(nomeEt)
 
         sobrenomeEt = EditText(this)
@@ -51,22 +51,22 @@ class MainActivity : AppCompatActivity() {
             width = LinearLayout.LayoutParams.MATCH_PARENT
             height = LinearLayout.LayoutParams.WRAP_CONTENT
             inputType = InputType.TYPE_TEXT_VARIATION_PERSON_NAME
-            hint = "SOBRENOME"
-            activityMainActivity.root.addView(sobrenomeEt)
+            hint = "Sobrenome"
+            activityMainActivity.root.addView(this)
         }
 
         savedInstanceState?.getString(NOME).takeIf { it != null  }.apply { nomeEt.setText(this) }
 
-        editarActivityResultLaucher = registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult(),
-            object: ActivityResultCallback<ActivityResult>{
-                override fun onActivityResult(result: ActivityResult?) {
-                    Toast.makeText(this@MainActivity, "Editar fechou" ${result?.resultCode} )
+        editarActivityResultLaucher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { resultado ->
+            if (resultado?.resultCode == RESULT_OK){
+                with (resultado) {
+                    data?.getStringExtra(NOME).takeIf { it != null }.let { nomeEt.setText(it) }
+                    data?.getStringExtra(SOBRENOME).takeIf { it != null }.run { sobrenomeEt.setText(this) }
                 }
             }
-        )
+    }
 
-        Log.v(CICLO_ACTIVITY, "onStart: Iniciando ciclo de vida em PRIMEIO PLANO")
+    Log.v(CICLO_ACTIVITY, "onCreate: Iniciando ciclo de vida COMPLETO")
     }
 
     override fun onStart() {
@@ -91,12 +91,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.v(CICLO_ACTIVITY, "onDestroy: Finalizando ciclo de vida completo")
+        Log.v(CICLO_ACTIVITY, "onDestroy: Finalizando ciclo de vida COMPLETO")
     }
 
     override fun onRestart() {
         super.onRestart()
-        Log.v(CICLO_ACTIVITY, "onRestart: Preparando execução do n Start")
+        Log.v(CICLO_ACTIVITY, "onRestart: Preparando execução do onStart")
     }
 
 
@@ -113,7 +113,7 @@ class MainActivity : AppCompatActivity() {
 //        if (nome !=  null) {
 //            nomeEt.setText(nome)
 //        }
-        savedInstanceState.getString(NOME).takeIf { it !=  null} .apply { nomeEt.setText(this) }
+        //savedInstanceState.getString(NOME).takeIf { it !=  null} .apply { nomeEt.setText(this) }
         //nomeEt.setText(savedInstanceState.getString(NOME))
         //savedInstanceState.getString(NOME)
     }
@@ -128,7 +128,7 @@ class MainActivity : AppCompatActivity() {
             R.id.editarMi -> {
                 val editarIntent: Intent  = Intent(this, EditarActivity:: class.java)
                 //startActivity(editarIntent)
-                editarActivityResultLaucher.launch()
+                editarActivityResultLaucher.launch(editarIntent)
                 true
             }
             else -> {
